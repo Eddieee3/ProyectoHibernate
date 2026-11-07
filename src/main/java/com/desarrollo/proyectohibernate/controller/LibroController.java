@@ -13,12 +13,12 @@ public class LibroController {
         libroDAO.guardar(libro);
     }
 
-    public void modificar(Libro libro) {
-        libroDAO.actualizar(libro);
+    public boolean modificar(Libro libro) {
+        return libroDAO.modificar(libro);
     }
 
-    public void eliminar(long id) {
-        libroDAO.eliminar(id);
+    public boolean eliminar(long id) {
+        return libroDAO.eliminar(id);
     }
 
     public List<Libro> listar() {

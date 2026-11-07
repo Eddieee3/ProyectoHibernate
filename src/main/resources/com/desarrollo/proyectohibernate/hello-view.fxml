@@ -25,9 +25,9 @@
     </GridPane>
 
     <HBox spacing="10">
-        <Button text="Guardar libro" onAction="#guardarLibro"/>
-        <Button text="Modificar libro" onAction="#modificarLibro"/>
-        <Button text="Eliminar libro" onAction="#eliminarLibro"/>
+        <Button fx:id="btnGuardar" text="Guardar libro" onAction="#guardarLibro"/>
+        <Button fx:id="btnModificar" text="Modificar libro" onAction="#modificarLibro"/>
+        <Button fx:id="btnEliminar" text="Eliminar libro" onAction="#eliminarLibro"/>
         <Button text="Limpiar campos" onAction="#limpiarCampos"/>
     </HBox>
 

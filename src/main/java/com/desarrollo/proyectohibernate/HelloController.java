@@ -26,6 +26,14 @@ public class HelloController {
     @FXML
     private Label lblMensaje;
 
+    // botones
+    @FXML
+    private Button btnGuardar;
+    @FXML
+    private Button btnModificar;
+    @FXML
+    private Button btnEliminar;
+
     // tabla y columnas
     @FXML
     private TableView<Libro> tablaLibros;
@@ -61,9 +69,11 @@ public class HelloController {
                 txtAnio.setText(String.valueOf(libroSeleccionado.getAnioPublicacion()));
                 txtPrecio.setText(String.valueOf(libroSeleccionado.getPrecio()));
             }
+            actualizarBotones();
         });
 
         cargarTabla();
+        actualizarBotones();
     }
 
     @FXML
@@ -72,15 +82,8 @@ public class HelloController {
             return;
         }
 
-        String titulo = txtTitulo.getText();
-        String autor = txtAutor.getText();
-        int anio = Integer.parseInt(txtAnio.getText());
-        BigDecimal precio = new BigDecimal(txtPrecio.getText());
-
         try {
-            Libro libro = new Libro(
-                    titulo, autor, anio, precio
-            );
+            Libro libro = obtenerLibroFormulario();
             libroDAO.guardar(libro);
 
             lblMensaje.setText("Libro guardado correctamente");
@@ -102,14 +105,16 @@ public class HelloController {
         }
 
         try {
-            libroSeleccionado.setTitulo(txtTitulo.getText());
-            libroSeleccionado.setAutor(txtAutor.getText());
-            libroSeleccionado.setAnioPublicacion(Integer.parseInt(txtAnio.getText()));
-            libroSeleccionado.setPrecio(new BigDecimal(txtPrecio.getText()));
+            Libro libro = obtenerLibroFormulario();
+            libro.setId(libroSeleccionado.getId());
 
-            libroDAO.actualizar(libroSeleccionado);
+            boolean modificado = libroDAO.modificar(libro);
 
-            lblMensaje.setText("Libro modificado correctamente");
+            if (modificado) {
+                lblMensaje.setText("Libro modificado correctamente");
+            } else {
+                mostrarAlerta("Aviso", "El libro ya no existe en la base de datos");
+            }
             limpiarCampos();
             cargarTabla();
         } catch (Exception e) {
@@ -132,8 +137,13 @@ public class HelloController {
 
         if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
             try {
-                libroDAO.eliminar(libroSeleccionado.getId());
-                lblMensaje.setText("Libro eliminado");
+                boolean eliminado = libroDAO.eliminar(libroSeleccionado.getId());
+
+                if (eliminado) {
+                    lblMensaje.setText("Libro eliminado");
+                } else {
+                    mostrarAlerta("Aviso", "El libro ya no existe en la base de datos");
+                }
                 limpiarCampos();
                 cargarTabla();
             } catch (Exception e) {
@@ -150,6 +160,27 @@ public class HelloController {
         txtPrecio.setText("");
         libroSeleccionado = null;
         tablaLibros.getSelectionModel().clearSelection();
+        actualizarBotones();
+    }
+
+    // si hay un libro seleccionado se puede modificar o eliminar,
+    // si no hay ninguno solo se puede guardar uno nuevo
+    private void actualizarBotones() {
+        boolean haySeleccion = libroSeleccionado != null;
+        btnGuardar.setDisable(haySeleccion);
+        btnModificar.setDisable(!haySeleccion);
+        btnEliminar.setDisable(!haySeleccion);
+    }
+
+    // crea un libro con lo que esta escrito en los campos
+    private Libro obtenerLibroFormulario() {
+        String titulo = txtTitulo.getText().trim();
+        String autor = txtAutor.getText().trim();
+        int anio = Integer.parseInt(txtAnio.getText().trim());
+        BigDecimal precio = new BigDecimal(txtPrecio.getText().trim());
+
+        Libro libro = new Libro(titulo, autor, anio, precio);
+        return libro;
     }
 
     // metodo para llenar la tabla con los libros de la base de datos

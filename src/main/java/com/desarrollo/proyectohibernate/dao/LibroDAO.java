@@ -24,14 +24,26 @@ public class LibroDAO {
     }
 
     // modificar un libro que ya existe
-    public void actualizar(Libro libro) {
+    // devuelve true si se modifico y false si no se encontro el libro
+    public boolean modificar(Libro libro) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             em.getTransaction().begin();
-            em.merge(libro);
+            Libro libroExistente = em.find(Libro.class, libro.getId());
+            if (libroExistente == null) {
+                em.getTransaction().rollback();
+                return false;
+            }
+            libroExistente.setTitulo(libro.getTitulo());
+            libroExistente.setAutor(libro.getAutor());
+            libroExistente.setAnioPublicacion(libro.getAnioPublicacion());
+            libroExistente.setPrecio(libro.getPrecio());
             em.getTransaction().commit();
+            return true;
         } catch (Exception e) {
-            em.getTransaction().rollback();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
             throw e;
         } finally {
             em.close();
@@ -39,17 +51,23 @@ public class LibroDAO {
     }
 
     // eliminar un libro por su id
-    public void eliminar(long id) {
+    // devuelve true si se elimino y false si no se encontro el libro
+    public boolean eliminar(long id) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             em.getTransaction().begin();
             Libro libro = em.find(Libro.class, id);
-            if (libro != null) {
-                em.remove(libro);
+            if (libro == null) {
+                em.getTransaction().rollback();
+                return false;
             }
+            em.remove(libro);
             em.getTransaction().commit();
+            return true;
         } catch (Exception e) {
-            em.getTransaction().rollback();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
             throw e;
         } finally {
             em.close();
